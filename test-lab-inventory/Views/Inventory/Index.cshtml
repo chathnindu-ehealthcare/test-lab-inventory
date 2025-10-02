@@ -1,0 +1,105 @@
+@model test_lab_inventory.Models.InventoryDashboardViewModel
+
+@{
+    ViewBag.Title = "AI Inventory Dashboard";
+}
+
+<section class="hero">
+    <div class="container">
+        <h1 class="page-title">AI Guided Inventory Overview</h1>
+        <p class="lead">
+            This screen demonstrates how we combine structured inventory data
+            with heuristic insights. Interns: keep an eye on how the data model,
+            controller and view communicate in a tight feedback loop.
+        </p>
+    </div>
+</section>
+
+<section class="insights container">
+    <h2>Operational Insights</h2>
+    <div class="insight-grid">
+        @foreach (var insight in Model.Insights)
+        {
+            var severityClass = insight.Severity == test_lab_inventory.Models.InsightSeverity.Critical
+                ? "insight-card critical"
+                : insight.Severity == test_lab_inventory.Models.InsightSeverity.Warning
+                    ? "insight-card warning"
+                    : "insight-card info";
+
+            <article class="@severityClass">
+                <h3>@insight.Title</h3>
+                <p>@insight.Message</p>
+            </article>
+        }
+    </div>
+</section>
+
+<section class="inventory-table container">
+    <h2>Inventory Snapshot</h2>
+    <table class="table table-striped table-bordered">
+        <thead>
+            <tr>
+                <th>Item Code</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Reorder Point</th>
+                <th>Avg Daily Usage</th>
+                <th>Expires</th>
+                <th>Location</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var item in Model.Items)
+        {
+            var highlightClass = item.QuantityOnHand <= item.ReorderPoint ? "table-danger" : string.Empty;
+            <tr class="@highlightClass">
+                <td>@item.ItemCode</td>
+                <td>@item.Name</td>
+                <td>@item.Category</td>
+                <td>@item.QuantityOnHand</td>
+                <td>@item.ReorderPoint</td>
+                <td>@string.Format("{0:0.0}", item.AverageDailyUsage)</td>
+                <td>@(item.ExpirationDate.HasValue ? item.ExpirationDate.Value.ToString("yyyy-MM-dd") : "N/A")</td>
+                <td>@item.StorageLocation</td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</section>
+
+<section class="category-utilization container">
+    <h2>Category Utilization (Daily)</h2>
+    <ul class="utilization-list">
+        @foreach (var entry in Model.CategoryUtilization)
+        {
+            <li>
+                <span class="category-label">@entry.Key</span>
+                <span class="category-value">@entry.Value.ToString("0.##") units/day</span>
+            </li>
+        }
+    </ul>
+</section>
+
+@section Styles {
+    <style>
+        .hero { background: #173753; color: #fff; padding: 2.5rem 0; margin-bottom: 2rem; }
+        .hero .page-title { font-size: 2.5rem; margin-bottom: 0.5rem; }
+        .hero .lead { max-width: 720px; }
+        .insight-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-bottom: 2rem; }
+        .insight-card { padding: 1.25rem; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08); }
+        .insight-card h3 { margin-top: 0; font-size: 1.25rem; }
+        .insight-card.critical { background: #fee2e2; border-left: 6px solid #b91c1c; }
+        .insight-card.warning { background: #fef3c7; border-left: 6px solid #b45309; }
+        .insight-card.info { background: #e0f2fe; border-left: 6px solid #0369a1; }
+        .inventory-table table { width: 100%; }
+        .category-utilization { margin-top: 2rem; }
+        .utilization-list { list-style: none; padding: 0; }
+        .utilization-list li { display: flex; justify-content: space-between; padding: 0.75rem 1rem; border: 1px solid #e5e7eb; margin-bottom: 0.5rem; border-radius: 4px; }
+        .table-danger { background: #fee2e2; }
+        @media (max-width: 768px) {
+            .hero { padding: 1.5rem 0; }
+            .insight-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+}
